@@ -15,7 +15,7 @@
 ログディレクトリそのデータはプロパティファイルの”log.dirs”プロパティで指定したディレクトリ（以下､ログディレクトリ）で管理されることになります｡プロパティで指定するログディレクトリは1つでなくて複数でも可能で、CSVと同様に">
 <meta property="og:image" content="http://localhost/images/kafka/message1.png">
 <meta property="og:image" content="http://localhost/images/kafka/message2.png">
-<meta property="og:updated_time" content="2017-01-02T06:31:09.000Z">
+<meta property="og:updated_time" content="2017-01-02T14:17:02.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Kafkaメッセージ処理(1)">
 <meta name="twitter:description" content="ここではKafkaのメッセージについて記述していきます。Kafkaではproducerから受け取ったメッセージをlogとしてディスクに書き込みながら管理を行います。
@@ -37,6 +37,19 @@
 
   <link rel="stylesheet" href="/css/styles.css">
   
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-89700943-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
 
 </head>
 
@@ -117,7 +130,7 @@
 <p>1つのメッセージはMessageクラストして管理されます｡以下にMessage構造についての図を示します｡ソースコードでは”src/main/scala/kafka/message/message.scala”に対応します｡</p>
 <p><img src="/images/kafka/message1.png" alt="Message構造"></p>
 <p>Kafkaではバージョン0.10から、メッセージに対してタイムスタンプを付与出来るようになりました。そのためMessage構造はメッセージにタイムスタンプを付与するかどうかで、少し異なります。メッセージにタイムスタンプを付与しない場合にはmagicの値が0、付与する場合には1を格納します。<br>Message構造は一般的なキーバリューストアと同様にキーとペイロード（後述しますがバリュー値以外も圧縮されたメッセージも格納されます）とそのほかの情報から成り立ちます｡</p>
-<p>細かく見ていくと図中のCRC32は､メッセージ誤り検出のためのチェックサム値､magicにはマジックナンバー（メッセージにタイムスタンプを付与するかどうかで0か1が格納）､属性にはペイロードの圧縮を示すための値とタイムスタンプに関する情報がそれぞれ格納されます｡またタイムスタンプを付与する場合には属性値の後に8byteのタイムスタンプ情報が加わります。<br>Messageペイロードの圧縮方法について見ていくと､属性値の下位3bitで圧縮コードが表され､0が未圧縮であることを示し､1がgzip, 2がsnappy,3がlz4の圧縮方法でそれぞれ圧縮されていることを表しています。</p>
+<p>細かく見ていくと図中のCRC32は､メッセージ誤り検出のためのチェックサム値､magicにはマジックナンバー（メッセージにタイムスタンプを付与するかどうかで0か1が格納）､属性にはペイロードの圧縮を示すための値とタイムスタンプに関する情報がそれぞれ格納されます｡またタイムスタンプを付与する場合には属性値の後に8byteのタイムスタンプ情報が加わります。<br>Messageペイロードの圧縮方法について見ていくと､属性値の下位3bitで圧縮コードが表され､0が未圧縮であることを示し､1がgzip,、2がsnappy、3がlz4の圧縮方法でそれぞれ圧縮されていることを表しています。</p>
 <h2 id="メッセージセット-非圧縮"><a href="#メッセージセット-非圧縮" class="headerlink" title="メッセージセット(非圧縮)"></a>メッセージセット(非圧縮)</h2><p>複数のメッセージをログディレクトリへと格納する際には､先程のMessages構造とは別にメッセージごとにユニークな値（ここではTopic-partitionごとにユニークな値）であるOffsetが割り当てられます。Offsetはメッセージに対してシーケンシャルに割り当てられる値と解釈出来る｡<br>以上のことから､複数のメッセージをlogとしてログディレクトリ格納すると以下の図のようになります｡ここでは圧縮をしない場合についてのパターンを示しています､</p>
 <p>Kafkaでは1つずつのメッセージをその都度､ログディレクトリへ書き込むのではなく､いくつかのメッセージをまとめて(メッセージセットごとに)書き込むようになっていて､複数のメッセージをMessageSetオブジェクトとして扱います。ソースでは”src/main/scala/kafka/message/MessageSet.scala”や”src/main/scala/kafka/message/ByteBufferMessageSet.scala”に対応します。</p>
 <p><img src="/images/kafka/message2.png" alt="MessageSet構造(非圧縮)"></p>
@@ -132,7 +145,7 @@
     
 
     <footer class="article-footer">
-      <a data-url="http://localhost/2017/01/01/kafka/message1/" data-id="cixg534yl0000rhpvnkteu4mh" class="article-share-link">
+      <a data-url="http://localhost/2017/01/01/kafka/message1/" data-id="cixgy5lho00007ipvk9jc6hu6" class="article-share-link">
         <i class="fa fa-share"></i> Share
       </a>
       
@@ -144,6 +157,18 @@
   </div>
   
     
+<ul id="article-nav" class="nav nav-pills nav-justified">
+  
+  
+  <li role="presentation">
+    <a href="/2017/01/03/kafka/message2/" id="article-nav-newer" class="article-nav-link-wrap">
+      <span class="article-nav-link-title">Kafkaメッセージ処理(2)</span>
+      <i class="fa fa-chevron-right pull-right"></i>
+    </a>
+  </li>
+  
+</ul>
+
 
   
 </article>
@@ -167,7 +192,7 @@
   
   <div class="sidebar-module">
     <h4>Tags</h4>
-    <ul class="sidebar-module-list"><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/Apache-Kafka/">Apache Kafka</a><span class="sidebar-module-list-count">1</span></li></ul>
+    <ul class="sidebar-module-list"><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/Apache-Kafka/">Apache Kafka</a><span class="sidebar-module-list-count">2</span></li></ul>
   </div>
 
 
@@ -184,7 +209,7 @@
   
   <div class="sidebar-module">
     <h4>Archives</h4>
-    <ul class="sidebar-module-list"><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2017/01/">January 2017</a><span class="sidebar-module-list-count">1</span></li></ul>
+    <ul class="sidebar-module-list"><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2017/01/">1月 2017</a><span class="sidebar-module-list-count">2</span></li></ul>
   </div>
 
 
@@ -193,6 +218,10 @@
   <div class="sidebar-module">
     <h4>Recents</h4>
     <ul class="sidebar-module-list">
+      
+        <li>
+          <a href="/2017/01/03/kafka/message2/">Kafkaメッセージ処理(2)</a>
+        </li>
       
         <li>
           <a href="/2017/01/01/kafka/message1/">Kafkaメッセージ処理(1)</a>
