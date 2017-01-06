@@ -20,7 +20,7 @@
 <meta property="og:image" content="http://localhost/images/kafka/message2.png">
 <meta property="og:image" content="http://localhost/images/kafka/message3.png">
 <meta property="og:image" content="http://localhost/images/kafka/message4.png">
-<meta property="og:updated_time" content="2017-01-03T04:05:55.000Z">
+<meta property="og:updated_time" content="2017-01-04T23:51:53.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Kafkaメッセージ処理(2)">
 <meta name="twitter:description" content="Kafkaメッセージ処理(1)では、メッセージ構造から非圧縮のメッセージセットまでを説明しました。ここでは主に圧縮を行った場合のメッセージの扱いについて記述を行います。
@@ -135,7 +135,7 @@ ga('send', 'pageview');
 <h2 id="メッセージセット-圧縮"><a href="#メッセージセット-圧縮" class="headerlink" title="メッセージセット(圧縮)"></a>メッセージセット(圧縮)</h2><p>まず<a href="/2017/01/01/kafka/message1/index.html">Kafkaメッセージ処理(1)</a>で記述した、非圧縮の場合のメッセージセット構造を改めて以下に示します。</p>
 <p><img src="/images/kafka/message2.png" alt="MessageSet構造(非圧縮)"></p>
 <p>このように圧縮を行わなかった場合にはメッセージにオフセットとメッセージ長を付加して並べているだけでした。<br>メッセージを圧縮した場合には上で示したメッセージ集合を圧縮したものを､ペイロードとして持つメッセージを作成します｡以下に圧縮した場合のメッセージについての図を示します｡</p>
-<p>yy<img src="/images/kafka/message3.png" alt="MessageSet構造(圧縮)"></p>
+<p><img src="/images/kafka/message3.png" alt="MessageSet構造(圧縮)"></p>
 <p>図のように、圧縮を行った場合にはメッセージ集合を圧縮したものをペイロードとして格納した1つのメッセージとなります｡ここで圧縮メッセージをペイロードとしてもつメッセージに割り当てるオフセットの値は、圧縮されたメッセージ集合の最後のメッセージのオフセットと同じ値を格納します。また圧縮を施すメッセージ集合のmagic値はすべて同じ値となり、magic値が1の場合にはメッセージ集合内のオフセットの値が、先頭のメッセージからの差分の値が格納されることになります。<br>このようにしてメッセージを圧縮することによって、圧縮されていないメッセージと構造が同じになり内部的な処理が行いやすくなります｡</p>
 <h2 id="メッセージのイテレート処理"><a href="#メッセージのイテレート処理" class="headerlink" title="メッセージのイテレート処理"></a>メッセージのイテレート処理</h2><p>圧縮をする場合も、しない場合もメッセージ集合は同じような構造で格納することになるます。そのため1つ1つのメッセージを読み込む際の処理は、まずメッセージのメタ情報として格納されている圧縮コードを見て、そのメッセージが圧縮されおらずペイロードにデータが格納されているのか、圧縮されたメッセージ集合がペイロードに格納されているのかを判断します。圧縮されたメッセージ集合を持つ場合にはペーロードに対してデコードを施し、格納されていたメッセージ集合をさらにイテレートしていきます｡</p>
 <h3 id="shallowイテレートとdeepイテレート"><a href="#shallowイテレートとdeepイテレート" class="headerlink" title="shallowイテレートとdeepイテレート"></a>shallowイテレートとdeepイテレート</h3><p>メッセージ集合をイテレートしていく処理ですが、格納されているメッセージを1つ1つ取り出していく場合には圧縮されたメッセージをデコードしながらイテレートしていく必要がありますが、一方でメッセージ集合のサイズが全体でどれくらいになるのかを知りたい場合は圧縮されたメッセージをデコードせずに圧縮メッセージ集合をペイロードとしてもつメッセージを1つのメッセージをそのままイテレートしていけば良いことになります（メッセージをディスクに書き込む場合などはメッセージを圧縮したまま書き込みを行うことになるので、この場合は圧縮された場合のメッセージ集合のサイズを調べます）。</p>
@@ -152,7 +152,7 @@ ga('send', 'pageview');
     
 
     <footer class="article-footer">
-      <a data-url="http://localhost/2017/01/03/kafka/message2/" data-id="cixhaivjf000391pvghlpa7qu" class="article-share-link">
+      <a data-url="http://localhost/2017/01/03/kafka/message2/" data-id="cixlex1l90003g6pvcjtw3zbz" class="article-share-link">
         <i class="fa fa-share"></i> Share
       </a>
       
