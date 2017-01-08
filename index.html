@@ -128,7 +128,7 @@ ga('send', 'pageview');
 <p><img src="/images/kafka/log2.png" alt="ログセグメントの構成"></p>
 <p>ログ機構では書き込みの単位をメッセージ処理で説明したMessageSetというメッセージの集合として受け取ります。このMessageSetを書込みデータとして受け取るとログファイルの末尾への書込みが行われます。<br>一定量（プロパティ”log.index.interval.bytes”で指定したバイト数）ごとの書込みが行われると現在のオフセットと、そのオフセットに対応するメッセージがログファイルのどこに記述されているかの書込み位置をオフセットインデックスへ格納します。また現在のタイムスタンプとオフセットの情報をタイムインデックスへ格納します。<br>ただしインデックスファイルへ書き込まれるオフセットの値はオフセットのそのものの値ではなく、オフセットと基準オフセットと呼ばれるログファイルに最初に書かれたオフセットとの差分の値が書き込まれることになります。</p>
 <p>インデックスファイルを作成することによって、任意のオフセットやタイムスタンプのメッセージを取得する処理が高速に行えるようになります｡<br>インデックスファイルが存在しない場合には、ログファイルの先頭からシーケンシャルスキャンによって対応するオフセット(もしくはタイムスタンプ)のメッセージを捜さなければなりません。<br>しかしインデックスファイルがあると、まずインデックスファイルの内容から2分探索（オフセットは短調増加していくので2分探索が可能になります）によって、オフセットに対応するメッセージがメッセージファイル内のどこに位置するかがおおよそでわかるため、シーケンシャルスキャンを行わなけばならない範囲を限定することが出来ます。</p>
-<p>このようにインデックスファイルを作成することによって読み込み処理が効率的に行われるようになります｡インデックスファイルへの書き込みの閾値であるプロパティ”log.index.interval.bytes”を小さくすれば寄り効率的に読み込みが行えますが、インデックスファイルが大きくなったり、書込み処理が重くなったりとトレードオフがあることに注意する必要があります。</p>
+<p>このようにインデックスファイルを作成することによって読み込み処理が効率的に行われるようになります｡インデックスファイルへの書き込みの閾値であるプロパティ”log.index.interval.bytes”を小さくすればより効率的に読み込みが行えますが、インデックスファイルが大きくなったり、書込み処理が重くなったりとトレードオフがあることに注意する必要があります。</p>
 
       
     </div>
@@ -139,7 +139,7 @@ ga('send', 'pageview');
     
 
     <footer class="article-footer">
-      <a data-url="http://localhost/2017/01/08/kafka/logs1/" data-id="cixoasi3z0000wnpv787836tn" class="article-share-link">
+      <a data-url="http://localhost/2017/01/08/kafka/logs1/" data-id="cixob7glk000514pvkr49i1p6" class="article-share-link">
         <i class="fa fa-share"></i> Share
       </a>
       
@@ -202,7 +202,7 @@ ga('send', 'pageview');
     
 
     <footer class="article-footer">
-      <a data-url="http://localhost/2017/01/03/kafka/message2/" data-id="cixoasi470005wnpvfx5iioh2" class="article-share-link">
+      <a data-url="http://localhost/2017/01/03/kafka/message2/" data-id="cixob7glh000314pvee2980i2" class="article-share-link">
         <i class="fa fa-share"></i> Share
       </a>
       
@@ -265,7 +265,7 @@ ga('send', 'pageview');
     
 
     <footer class="article-footer">
-      <a data-url="http://localhost/2017/01/01/kafka/message1/" data-id="cixoasi460003wnpv1qtjvfrm" class="article-share-link">
+      <a data-url="http://localhost/2017/01/01/kafka/message1/" data-id="cixob7glb000014pv2s2u1tcj" class="article-share-link">
         <i class="fa fa-share"></i> Share
       </a>
       
