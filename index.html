@@ -93,6 +93,68 @@ ga('send', 'pageview');
         <div class="col-sm-8 blog-main">
           
   
+    <article id="post-kafka/logs1" class="article article-type-post" itemscope itemprop="blogPost">
+
+  <header class="article-header">
+    
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/01/08/kafka/logs1/">Kafkaログ機構(1)</a>
+    </h1>
+  
+
+
+  </header>
+
+  <div class="article-meta">
+    <div class="article-datetime">
+  <a href="/2017/01/08/kafka/logs1/" class="article-date"><time datetime="2017-01-08T06:42:02.000Z" itemprop="datePublished">2017-01-08</time></a>
+</div>
+
+    
+    
+
+  </div>
+  <div class="article-inner">
+
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>ここではBrokerが受けったメッセージをディスクへ書き込んで管理するためのログ機構について説明を行っていきます。<br>ソースコードは”src/main/scala/kafka/log/”ディレクトリ内のファイルに対応します。</p>
+<h2 id="ログの格納"><a href="#ログの格納" class="headerlink" title="ログの格納"></a>ログの格納</h2><p>メッセージをまとめてログファイルとしてディスクに書き出すディレクトリは、プロパティ”log.dirs”(もしくは”log.dir”)で指定したディレクトリ（ログディレクトリ）以下の”&lt;トピック名&gt;-&lt;パーティション&gt;“ディレクトリ内に格納されます｡</p>
+<p>新規でトピックを作成した場合などにログファイルを新規で作成しますが、ログディレクトリを複数指定していた場合には、最も作成されている数（ログディレクトリ内のディレクトリ数）が少ないログディレクトリを作成対象として選択します。</p>
+<h2 id="ログセグメント"><a href="#ログセグメント" class="headerlink" title="ログセグメント"></a>ログセグメント</h2><p>ログは1つのファイルに逐次書き込まれていくのではなく、複数のファイルに分割されながら書き込まれていきます｡この分割の単位をログセグメントと呼びます。<br>以下の図のように、受け取ったメッセージをログとして書き込んでいきます。</p>
+<p><img src="/images/kafka/log1.png" alt="ログセグメント"></p>
+<h3 id="ログセグメントの構成"><a href="#ログセグメントの構成" class="headerlink" title="ログセグメントの構成"></a>ログセグメントの構成</h3><p>さてこのログセグメントは3つのファイルから構成されます。<br>1つはメッセージを格納していくログファイル、さらにメッセージの読み込み時に参照するためのオフセットインデックス(OffsetIndex)とタイムインデックス(TimeIndex)です。</p>
+<p><img src="/images/kafka/log2.png" alt="ログセグメントの構成"></p>
+<p>ログ機構では書き込みの単位をメッセージ処理で説明したMessageSetというメッセージの集合として受け取ります。このMessageSetを書込みデータとして受け取るとログファイルの末尾への書込みが行われます。<br>一定量（プロパティ”log.index.interval.bytes”で指定したバイト数）ごとの書込みが行われると現在のオフセットと、そのオフセットに対応するメッセージがログファイルのどこに記述されているかの書込み位置をオフセットインデックスへ格納します。また現在のタイムスタンプとオフセットの情報をタイムインデックスへ格納します。<br>ただしインデックスファイルへ書き込まれるオフセットの値はオフセットのそのものの値ではなく、オフセットと基準オフセットと呼ばれるログファイルに最初に書かれたオフセットとの差分の値が書き込まれることになります。</p>
+<p>インデックスファイルを作成することによって、任意のオフセットやタイムスタンプのメッセージを取得する処理が高速に行えるようになります｡<br>インデックスファイルが存在しない場合には、ログファイルの先頭からシーケンシャルスキャンによって対応するオフセット(もしくはタイムスタンプ)のメッセージを捜さなければなりません。<br>しかしインデックスファイルがあると、まずインデックスファイルの内容から2分探索（オフセットは短調増加していくので2分探索が可能になります）によって、オフセットに対応するメッセージがメッセージファイル内のどこに位置するかがおおよそでわかるため、シーケンシャルスキャンを行わなけばならない範囲を限定することが出来ます。</p>
+<p>このようにインデックスファイルを作成することによって読み込み処理が効率的に行われるようになります｡インデックスファイルへの書き込みの閾値であるプロパティ”log.index.interval.bytes”を小さくすれば寄り効率的に読み込みが行えますが、インデックスファイルが大きくなったり、書込み処理が重くなったりとトレードオフがあることに注意する必要があります。</p>
+
+      
+    </div>
+
+    
+      
+
+    
+
+    <footer class="article-footer">
+      <a data-url="http://localhost/2017/01/08/kafka/logs1/" data-id="cixoasi3z0000wnpv787836tn" class="article-share-link">
+        <i class="fa fa-share"></i> Share
+      </a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Apache-Kafka/">Apache Kafka</a></li></ul>
+
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-kafka/message2" class="article article-type-post" itemscope itemprop="blogPost">
 
   <header class="article-header">
@@ -140,7 +202,7 @@ ga('send', 'pageview');
     
 
     <footer class="article-footer">
-      <a data-url="http://localhost/2017/01/03/kafka/message2/" data-id="cixlex1l90003g6pvcjtw3zbz" class="article-share-link">
+      <a data-url="http://localhost/2017/01/03/kafka/message2/" data-id="cixoasi470005wnpvfx5iioh2" class="article-share-link">
         <i class="fa fa-share"></i> Share
       </a>
       
@@ -203,7 +265,7 @@ ga('send', 'pageview');
     
 
     <footer class="article-footer">
-      <a data-url="http://localhost/2017/01/01/kafka/message1/" data-id="cixlex1lg0005g6pvz89s6uur" class="article-share-link">
+      <a data-url="http://localhost/2017/01/01/kafka/message1/" data-id="cixoasi460003wnpv1qtjvfrm" class="article-share-link">
         <i class="fa fa-share"></i> Share
       </a>
       
@@ -239,7 +301,7 @@ ga('send', 'pageview');
   
   <div class="sidebar-module">
     <h4>Tags</h4>
-    <ul class="sidebar-module-list"><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/Apache-Kafka/">Apache Kafka</a><span class="sidebar-module-list-count">2</span></li></ul>
+    <ul class="sidebar-module-list"><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/Apache-Kafka/">Apache Kafka</a><span class="sidebar-module-list-count">3</span></li></ul>
   </div>
 
 
@@ -256,7 +318,7 @@ ga('send', 'pageview');
   
   <div class="sidebar-module">
     <h4>Archives</h4>
-    <ul class="sidebar-module-list"><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2017/01/">1月 2017</a><span class="sidebar-module-list-count">2</span></li></ul>
+    <ul class="sidebar-module-list"><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2017/01/">1月 2017</a><span class="sidebar-module-list-count">3</span></li></ul>
   </div>
 
 
@@ -265,6 +327,10 @@ ga('send', 'pageview');
   <div class="sidebar-module">
     <h4>Recents</h4>
     <ul class="sidebar-module-list">
+      
+        <li>
+          <a href="/2017/01/08/kafka/logs1/">Kafkaログ機構(1)</a>
+        </li>
       
         <li>
           <a href="/2017/01/03/kafka/message2/">Kafkaメッセージ処理(2)</a>
