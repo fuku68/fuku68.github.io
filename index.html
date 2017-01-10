@@ -93,6 +93,75 @@ ga('send', 'pageview');
         <div class="col-sm-8 blog-main">
           
   
+    <article id="post-leveldb/cache" class="article article-type-post" itemscope itemprop="blogPost">
+
+  <header class="article-header">
+    
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/01/10/leveldb/cache/">LevelDBのキャッシュ実装</a>
+    </h1>
+  
+
+
+  </header>
+
+  <div class="article-meta">
+    <div class="article-datetime">
+  <a href="/2017/01/10/leveldb/cache/" class="article-date"><time datetime="2017-01-09T15:00:00.000Z" itemprop="datePublished">2017-01-10</time></a>
+</div>
+
+    
+    
+
+  </div>
+  <div class="article-inner">
+
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>LevelDBではキーバリューデータを内部的に効果的に扱うキャッシュ機構が実装されています。<br>LevelDBのキャッシュは”/include/leveldb/cache.h”でインターフェースが定義されており、実装は”/util/cache.cc”でShardedLRUCacheクラスとして行われています。</p>
+<h2 id="キャッシュ処理の分散"><a href="#キャッシュ処理の分散" class="headerlink" title="キャッシュ処理の分散"></a>キャッシュ処理の分散</h2><p>ShardedLRUCacheはキャッシュ操作を排他的に行うためのロック処理の効率化を行うために、実際のキャッシュを行うLRUCacheインスタンスを複数管理し、ハッシュ値によって、処理を行うLRUCacheオブジェクトを決定します。</p>
+<p><img src="/images/leveldb/cache1.png" alt="キャッシュ処理の分散"></p>
+<p>ShardedLRUCacheがデータ操作のためにキー情報を受け取ると、キーからハッシュ値を算出します。<br>ShardedLRUCacheが管理を行うLRUCacheインスタンスは16要素の配列として管理されているので、ハッシュ値の上位4bitを用いて処理を行うLRUCacheインスタンスを決定します。<br>このように排他ロックを伴うハッシュ管理を複数のインスタンスへ分散することによって排他制御によるボトルネックを軽減しています。</p>
+<h2 id="キャッシュ管理"><a href="#キャッシュ管理" class="headerlink" title="キャッシュ管理"></a>キャッシュ管理</h2><p>LevelDBのキャッシュ機構は、一般的なチェイン法によるハッシュテーブルと、LRUによるリソース管理がLRUCacheクラスで実装されています。</p>
+<h3 id="キャッシュ要素"><a href="#キャッシュ要素" class="headerlink" title="キャッシュ要素"></a>キャッシュ要素</h3><p>まずキャッシュを行うデータ要素はLRUHandle構造体によって行われます。以下にLRUHandle構造体の定義を記述します。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">struct LRUHandle &#123;</div><div class="line">  void* value;</div><div class="line">  void (*deleter)(const Slice&amp;, void* value);</div><div class="line">  LRUHandle* next_hash;</div><div class="line">  LRUHandle* next;</div><div class="line">  LRUHandle* prev;</div><div class="line">  size_t charge;      // TODO(opt): Only allow uint32_t?</div><div class="line">  size_t key_length;</div><div class="line">  bool in_cache;      // Whether entry is in the cache.</div><div class="line">  uint32_t refs;      // References, including cache reference, if present.</div><div class="line">  uint32_t hash;      // Hash of key(); used for fast sharding and comparisons</div><div class="line">  char key_data[1];   // Beginning of key</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
+<p>LRUHandle構造体のkey_dataでキャッシュデータのキー、valueでバリューへの参照をそれぞれ管理します。<br>その他の要素はハッシュテーブルやLRUの管理のために用いられます。</p>
+<h3 id="ハッシュテーブル"><a href="#ハッシュテーブル" class="headerlink" title="ハッシュテーブル"></a>ハッシュテーブル</h3><p>LevelDBではキャッシュされたデータを高速に検索するために、キャッシュデータをチェイン法によるキャッシュテーブルで管理しています。キャッシュテーブルの実装はHandleTableクラスで行われています。<br>またキャッシュテーブルのサイズは固定ではなく、格納要素がキャッシュテーブルのサイズより大きくなる度に、キャッシュテーブルのサイズを2倍に拡張するようになっています(キャッシュテーブル位置をビット演算で検出するためにサイズは2の乗数とします)。</p>
+<p><img src="/images/leveldb/cache2.png" alt="ハッシュテーブルでのキャッシュ要素の管理"></p>
+<p>LRUHandle構造体のnext_hashメンバを用いて、ハッシュリストの管理しています。</p>
+<h3 id="LRUによるリソース管理"><a href="#LRUによるリソース管理" class="headerlink" title="LRUによるリソース管理"></a>LRUによるリソース管理</h3><p>キャッシュ機構は、特定のメモリ領域内でデータを保持するようになっています(始めに利用するメモリ領域を指定します)。そのためメモリ領域以上のデータをキャッシュを行おうとすると、他のデータをキャッシュから離脱させます。この時にLRUによって離脱するデータを管理するようになっています。<br>LevelDBでは以下の図に示す2つの双方向リンクリストによってリソースを管理します。</p>
+<p><img src="/images/leveldb/cache3.png" alt="LRUによるリソース管理"></p>
+<p>まず1つ目はlru_メンバによって管理されるキャッシュにあって参照がされていない要素のリストで、2つ目はキャッシュにありユーザに参照されている要素のin_user_リストです。<br>任意の要素はユーザによる参照が行われるとlru_リストから、in_user_リストの末尾へと移動します(LRUHandle構造体のrefsで参照すうを管理)。その後、ユーザによる参照が無くなるとin_user_リストからlru_リストの末尾へ移動されます。</p>
+<p>以上のことからlru_リストの先頭要素ほど、参照され無くなってから時間が経過している要素となるため、キャッシュのメモリ容量以上のデータの挿入が発生すると、キャッシュから離脱させる要素の対象となります。</p>
+<p>ちなみに要素の挿入時と要素に対する検索が行われたときに、参照がされたと判断されます。</p>
+<p>このようにLevelDBではキャッシュテーブルとLRUアルゴリズムによってキャッシュ機構を実現しています。</p>
+
+      
+    </div>
+
+    
+      
+
+    
+
+    <footer class="article-footer">
+      <a data-url="http://localhost/2017/01/10/leveldb/cache/" data-id="cixqumnbm0007rdpvwfbiv1rz" class="article-share-link">
+        <i class="fa fa-share"></i> Share
+      </a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/LevelDB/">LevelDB</a></li></ul>
+
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-kafka/logs1" class="article article-type-post" itemscope itemprop="blogPost">
 
   <header class="article-header">
@@ -139,7 +208,7 @@ ga('send', 'pageview');
     
 
     <footer class="article-footer">
-      <a data-url="http://localhost/2017/01/08/kafka/logs1/" data-id="cixob7glk000514pvkr49i1p6" class="article-share-link">
+      <a data-url="http://localhost/2017/01/08/kafka/logs1/" data-id="cixqumnb60000rdpvrpq4nz86" class="article-share-link">
         <i class="fa fa-share"></i> Share
       </a>
       
@@ -202,7 +271,7 @@ ga('send', 'pageview');
     
 
     <footer class="article-footer">
-      <a data-url="http://localhost/2017/01/03/kafka/message2/" data-id="cixob7glh000314pvee2980i2" class="article-share-link">
+      <a data-url="http://localhost/2017/01/03/kafka/message2/" data-id="cixqumnbl0005rdpvdcepk66n" class="article-share-link">
         <i class="fa fa-share"></i> Share
       </a>
       
@@ -265,7 +334,7 @@ ga('send', 'pageview');
     
 
     <footer class="article-footer">
-      <a data-url="http://localhost/2017/01/01/kafka/message1/" data-id="cixob7glb000014pv2s2u1tcj" class="article-share-link">
+      <a data-url="http://localhost/2017/01/01/kafka/message1/" data-id="cixqumnbj0003rdpvwpc67512" class="article-share-link">
         <i class="fa fa-share"></i> Share
       </a>
       
@@ -301,7 +370,7 @@ ga('send', 'pageview');
   
   <div class="sidebar-module">
     <h4>Tags</h4>
-    <ul class="sidebar-module-list"><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/Apache-Kafka/">Apache Kafka</a><span class="sidebar-module-list-count">3</span></li></ul>
+    <ul class="sidebar-module-list"><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/Apache-Kafka/">Apache Kafka</a><span class="sidebar-module-list-count">3</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/LevelDB/">LevelDB</a><span class="sidebar-module-list-count">1</span></li></ul>
   </div>
 
 
@@ -310,7 +379,7 @@ ga('send', 'pageview');
   <div class="sidebar-module">
     <h4>Tag Cloud</h4>
     <p class="tagcloud">
-      <a href="/tags/Apache-Kafka/" style="font-size: 10px;">Apache Kafka</a>
+      <a href="/tags/Apache-Kafka/" style="font-size: 20px;">Apache Kafka</a> <a href="/tags/LevelDB/" style="font-size: 10px;">LevelDB</a>
     </p>
   </div>
 
@@ -318,7 +387,7 @@ ga('send', 'pageview');
   
   <div class="sidebar-module">
     <h4>Archives</h4>
-    <ul class="sidebar-module-list"><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2017/01/">1月 2017</a><span class="sidebar-module-list-count">3</span></li></ul>
+    <ul class="sidebar-module-list"><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2017/01/">1月 2017</a><span class="sidebar-module-list-count">4</span></li></ul>
   </div>
 
 
@@ -327,6 +396,10 @@ ga('send', 'pageview');
   <div class="sidebar-module">
     <h4>Recents</h4>
     <ul class="sidebar-module-list">
+      
+        <li>
+          <a href="/2017/01/10/leveldb/cache/">LevelDBのキャッシュ実装</a>
+        </li>
       
         <li>
           <a href="/2017/01/08/kafka/logs1/">Kafkaログ機構(1)</a>
