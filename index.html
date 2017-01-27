@@ -14,6 +14,7 @@
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="ᗡocuments">
 <meta name="twitter:description" content="技術内容のあれこれ">
+<meta name="twitter:creator" content="@fuku_68">
   
     <link rel="alternate" href="/atom.xml" title="ᗡocuments" type="application/atom+xml">
   
@@ -93,13 +94,13 @@ ga('send', 'pageview');
         <div class="col-sm-8 blog-main">
           
   
-    <article id="post-leveldb/coding" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-leveldb/mem-table" class="article article-type-post" itemscope itemprop="blogPost">
 
   <header class="article-header">
     
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2017/01/11/leveldb/coding/">LevelDBの数値データの永続化</a>
+      <a class="article-title" href="/2017/01/14/leveldb/mem-table/">LevelDBのメモリテーブル</a>
     </h1>
   
 
@@ -108,7 +109,67 @@ ga('send', 'pageview');
 
   <div class="article-meta">
     <div class="article-datetime">
-  <a href="/2017/01/11/leveldb/coding/" class="article-date"><time datetime="2017-01-11T08:49:22.000Z" itemprop="datePublished">2017-01-11</time></a>
+  <a href="/2017/01/14/leveldb/mem-table/" class="article-date"><time datetime="2017-01-14T08:43:13.000Z" itemprop="datePublished">2017-01-14</time></a>
+</div>
+
+    
+    
+
+  </div>
+  <div class="article-inner">
+
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="メモリテーブル"><a href="#メモリテーブル" class="headerlink" title="メモリテーブル"></a>メモリテーブル</h2><p>LevelDBに対してデータをPUTすると、データはメモリ上でデータを管理するメモリテーブルへ書き込まれます。<br>その後メモリテーブルが一定の容量に達するとテーブルデータとしてファイルに書き込まれます。<br>ここではメモリーテーブルの仕組みに関して記述を行っていきます。</p>
+<h3 id="メモリアロケータ"><a href="#メモリアロケータ" class="headerlink" title="メモリアロケータ"></a>メモリアロケータ</h3><p>メモリテーブルではメモリのアロケーションを効率的に行うために、独自のメモリアロケータを利用しています。メモリアロケータはArenaクラス(/util/arena.*)として実装されており、4KBのメモリ領域を最初に確保しておき、必要に応じてその領域を細切れにして割り当てていくといった一般的な仕組みとなっています。</p>
+<p><img src="/images/leveldb/allocator.png" alt="メモリアロケータ"></p>
+<h3 id="スキップリスト"><a href="#スキップリスト" class="headerlink" title="スキップリスト"></a>スキップリスト</h3><p>メモリテーブルでのデータ構造はスキップリストを利用しています。スキップリストを利用することで、データによるアクセスがあった際の検索の効率化と、メモリテーブルデータをファイルに書き込む際のキーによるソート処理の効率化を担うことが出来ます。</p>
+<p><img src="/images/leveldb/skiplist.png" alt="スキップリスト"></p>
+<h3 id="格納データ"><a href="#格納データ" class="headerlink" title="格納データ"></a>格納データ</h3><p>前述のスキップリストの要素に対して、PUTで指定したデータを格納します。<br>以下に内部的に格納されるデータの構造を示します。</p>
+<p><img src="/images/leveldb/data.png" alt="格納データの構造"></p>
+<p>キーとバリュー値の長さ情報はそれぞれ圧縮された状態で格納されます。またデータのメタ情報としてシーケンス番号とデータタイプの情報が格納されます。<br>シーケンス番号はデータがLevelDBに格納されるたびにインクリメントされながら割り当てられる番号です。この番号によってトランザクションの管理を行います。<br>またLevelDBにおいてデータの削除は論理削除によって実装されているため、DELETE操作が行われると対象のキーの削除データが格納されます。そのためPUT操作かDELETE操作でのデータかを判別する為にデータタイプを格納します。</p>
+
+      
+    </div>
+
+    
+      
+
+    
+
+    <footer class="article-footer">
+      <a data-url="http://localhost/2017/01/14/leveldb/mem-table/" data-id="ciyf4efg8000coepvovygudem" class="article-share-link">
+        <i class="fa fa-share"></i> Share
+      </a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/LevelDB/">LevelDB</a></li></ul>
+
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-leveldb/coding" class="article article-type-post" itemscope itemprop="blogPost">
+
+  <header class="article-header">
+    
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/01/11/leveldb/coding/">LevelDBでの数値データの永続化</a>
+    </h1>
+  
+
+
+  </header>
+
+  <div class="article-meta">
+    <div class="article-datetime">
+  <a href="/2017/01/11/leveldb/coding/" class="article-date"><time datetime="2017-01-10T15:00:00.000Z" itemprop="datePublished">2017-01-11</time></a>
 </div>
 
     
@@ -134,7 +195,7 @@ ga('send', 'pageview');
     
 
     <footer class="article-footer">
-      <a data-url="http://localhost/2017/01/11/leveldb/coding/" data-id="cixsrkpz7000ad0pvlso96n61" class="article-share-link">
+      <a data-url="http://localhost/2017/01/11/leveldb/coding/" data-id="ciyf4efg4000aoepvhn24pi0x" class="article-share-link">
         <i class="fa fa-share"></i> Share
       </a>
       
@@ -203,7 +264,7 @@ ga('send', 'pageview');
     
 
     <footer class="article-footer">
-      <a data-url="http://localhost/2017/01/10/leveldb/cache/" data-id="cixsrkpz50007d0pv1lo22qmp" class="article-share-link">
+      <a data-url="http://localhost/2017/01/10/leveldb/cache/" data-id="ciyf4efg10007oepvf9w4ae79" class="article-share-link">
         <i class="fa fa-share"></i> Share
       </a>
       
@@ -265,7 +326,7 @@ ga('send', 'pageview');
     
 
     <footer class="article-footer">
-      <a data-url="http://localhost/2017/01/08/kafka/logs1/" data-id="cixsrkpyv0000d0pvmwgvdk3z" class="article-share-link">
+      <a data-url="http://localhost/2017/01/08/kafka/logs1/" data-id="ciyf4effs0000oepvys3wd3mk" class="article-share-link">
         <i class="fa fa-share"></i> Share
       </a>
       
@@ -328,7 +389,7 @@ ga('send', 'pageview');
     
 
     <footer class="article-footer">
-      <a data-url="http://localhost/2017/01/03/kafka/message2/" data-id="cixsrkpz40005d0pv79iovzww" class="article-share-link">
+      <a data-url="http://localhost/2017/01/03/kafka/message2/" data-id="ciyf4effy0003oepvh7oo2rgy" class="article-share-link">
         <i class="fa fa-share"></i> Share
       </a>
       
@@ -391,7 +452,7 @@ ga('send', 'pageview');
     
 
     <footer class="article-footer">
-      <a data-url="http://localhost/2017/01/01/kafka/message1/" data-id="cixsrkpz10003d0pvgaig6qcq" class="article-share-link">
+      <a data-url="http://localhost/2017/01/01/kafka/message1/" data-id="ciyf4efg00005oepvw76f7s94" class="article-share-link">
         <i class="fa fa-share"></i> Share
       </a>
       
@@ -427,7 +488,7 @@ ga('send', 'pageview');
   
   <div class="sidebar-module">
     <h4>Tags</h4>
-    <ul class="sidebar-module-list"><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/Apache-Kafka/">Apache Kafka</a><span class="sidebar-module-list-count">3</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/LevelDB/">LevelDB</a><span class="sidebar-module-list-count">2</span></li></ul>
+    <ul class="sidebar-module-list"><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/Apache-Kafka/">Apache Kafka</a><span class="sidebar-module-list-count">3</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/LevelDB/">LevelDB</a><span class="sidebar-module-list-count">3</span></li></ul>
   </div>
 
 
@@ -436,7 +497,7 @@ ga('send', 'pageview');
   <div class="sidebar-module">
     <h4>Tag Cloud</h4>
     <p class="tagcloud">
-      <a href="/tags/Apache-Kafka/" style="font-size: 20px;">Apache Kafka</a> <a href="/tags/LevelDB/" style="font-size: 10px;">LevelDB</a>
+      <a href="/tags/Apache-Kafka/" style="font-size: 10px;">Apache Kafka</a> <a href="/tags/LevelDB/" style="font-size: 10px;">LevelDB</a>
     </p>
   </div>
 
@@ -444,7 +505,7 @@ ga('send', 'pageview');
   
   <div class="sidebar-module">
     <h4>Archives</h4>
-    <ul class="sidebar-module-list"><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2017/01/">1月 2017</a><span class="sidebar-module-list-count">5</span></li></ul>
+    <ul class="sidebar-module-list"><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2017/01/">1月 2017</a><span class="sidebar-module-list-count">6</span></li></ul>
   </div>
 
 
@@ -455,7 +516,11 @@ ga('send', 'pageview');
     <ul class="sidebar-module-list">
       
         <li>
-          <a href="/2017/01/11/leveldb/coding/">LevelDBの数値データの永続化</a>
+          <a href="/2017/01/14/leveldb/mem-table/">LevelDBのメモリテーブル</a>
+        </li>
+      
+        <li>
+          <a href="/2017/01/11/leveldb/coding/">LevelDBでの数値データの永続化</a>
         </li>
       
         <li>
@@ -468,10 +533,6 @@ ga('send', 'pageview');
       
         <li>
           <a href="/2017/01/03/kafka/message2/">Kafkaメッセージ処理(2)</a>
-        </li>
-      
-        <li>
-          <a href="/2017/01/01/kafka/message1/">Kafkaメッセージ処理(1)</a>
         </li>
       
     </ul>

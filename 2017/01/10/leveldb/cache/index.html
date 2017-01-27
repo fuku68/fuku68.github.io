@@ -22,6 +22,7 @@
 <meta name="twitter:description" content="LevelDBではキーバリューデータを内部的に効果的に扱うキャッシュ機構が実装されています。LevelDBのキャッシュは”/include/leveldb/cache.h”でインターフェースが定義されており、実装は”/util/cache.cc”でShardedLRUCacheクラスとして行われています。
 キャッシュ処理の分散ShardedLRUCacheはキャッシュ操作を排他的に行うためのロック">
 <meta name="twitter:image" content="http://localhost/images/leveldb/cache1.png">
+<meta name="twitter:creator" content="@fuku_68">
   
     <link rel="alternate" href="/atom.xml" title="ᗡocuments" type="application/atom+xml">
   
@@ -152,7 +153,7 @@ ga('send', 'pageview');
     
 
     <footer class="article-footer">
-      <a data-url="http://localhost/2017/01/10/leveldb/cache/" data-id="cixsrkpz50007d0pv1lo22qmp" class="article-share-link">
+      <a data-url="http://localhost/2017/01/10/leveldb/cache/" data-id="ciyf4efg10007oepvf9w4ae79" class="article-share-link">
         <i class="fa fa-share"></i> Share
       </a>
       
@@ -176,7 +177,7 @@ ga('send', 'pageview');
   
   <li role="presentation">
     <a href="/2017/01/11/leveldb/coding/" id="article-nav-newer" class="article-nav-link-wrap">
-      <span class="article-nav-link-title">LevelDBの数値データの永続化</span>
+      <span class="article-nav-link-title">LevelDBでの数値データの永続化</span>
       <i class="fa fa-chevron-right pull-right"></i>
     </a>
   </li>
@@ -206,7 +207,7 @@ ga('send', 'pageview');
   
   <div class="sidebar-module">
     <h4>Tags</h4>
-    <ul class="sidebar-module-list"><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/Apache-Kafka/">Apache Kafka</a><span class="sidebar-module-list-count">3</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/LevelDB/">LevelDB</a><span class="sidebar-module-list-count">2</span></li></ul>
+    <ul class="sidebar-module-list"><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/Apache-Kafka/">Apache Kafka</a><span class="sidebar-module-list-count">3</span></li><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/tags/LevelDB/">LevelDB</a><span class="sidebar-module-list-count">3</span></li></ul>
   </div>
 
 
@@ -215,7 +216,7 @@ ga('send', 'pageview');
   <div class="sidebar-module">
     <h4>Tag Cloud</h4>
     <p class="tagcloud">
-      <a href="/tags/Apache-Kafka/" style="font-size: 20px;">Apache Kafka</a> <a href="/tags/LevelDB/" style="font-size: 10px;">LevelDB</a>
+      <a href="/tags/Apache-Kafka/" style="font-size: 10px;">Apache Kafka</a> <a href="/tags/LevelDB/" style="font-size: 10px;">LevelDB</a>
     </p>
   </div>
 
@@ -223,7 +224,7 @@ ga('send', 'pageview');
   
   <div class="sidebar-module">
     <h4>Archives</h4>
-    <ul class="sidebar-module-list"><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2017/01/">1月 2017</a><span class="sidebar-module-list-count">5</span></li></ul>
+    <ul class="sidebar-module-list"><li class="sidebar-module-list-item"><a class="sidebar-module-list-link" href="/archives/2017/01/">1月 2017</a><span class="sidebar-module-list-count">6</span></li></ul>
   </div>
 
 
@@ -234,7 +235,11 @@ ga('send', 'pageview');
     <ul class="sidebar-module-list">
       
         <li>
-          <a href="/2017/01/11/leveldb/coding/">LevelDBの数値データの永続化</a>
+          <a href="/2017/01/14/leveldb/mem-table/">LevelDBのメモリテーブル</a>
+        </li>
+      
+        <li>
+          <a href="/2017/01/11/leveldb/coding/">LevelDBでの数値データの永続化</a>
         </li>
       
         <li>
@@ -247,10 +252,6 @@ ga('send', 'pageview');
       
         <li>
           <a href="/2017/01/03/kafka/message2/">Kafkaメッセージ処理(2)</a>
-        </li>
-      
-        <li>
-          <a href="/2017/01/01/kafka/message1/">Kafkaメッセージ処理(1)</a>
         </li>
       
     </ul>
